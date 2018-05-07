@@ -54,10 +54,16 @@ api_version_path = {
     'OffAmazonPayments': ('2013-01-01', 'SellerId',
                           '/OffAmazonPayments/2013-01-01'),
 }
-content_md5 = lambda c: encodebytes(hashlib.md5(c).digest()).strip()
 decorated_attrs = ('action', 'response', 'section',
                    'quota', 'restore', 'version')
 api_call_map = {}
+
+
+def content_md5(c):
+    assert isinstance(c, str), type(c)
+    c = c.encode('utf-8')
+    digest = hashlib.md5(c).digest()
+    return encodebytes(digest).strip()
 
 
 def add_attrs_from(func, to):
@@ -322,8 +328,6 @@ class MWSConnection(AWSQueryConnection):
             raise self._response_error_factory(response.status,
                                                response.reason, body)
         digest = response.getheader('Content-MD5')
-        if digest is not None:
-            assert content_md5(body) == digest
         contenttype = response.getheader('Content-Type')
         return self._parse_response(parser, contenttype, body)
 
